@@ -44,16 +44,6 @@ class ClientController extends Controller
        return Client::find($id);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -64,7 +54,11 @@ class ClientController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $result = Client::find($id)->update($request->all());
+        if ($result)
+            return ['error' => 0];
+        else
+            return ['error' => 1, 'msg' => 'Nao foi possivel atualizar o cliente'];
     }
 
     /**
