@@ -37,9 +37,8 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        return $this->repository->with(['client','user'])->all();
+        return $this->service->getAll();
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -60,7 +59,7 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
-        return $this->repository->find($id);
+        return $this->service->show($id);
     }
 
 
@@ -84,6 +83,6 @@ class ProjectController extends Controller
      */
     public function destroy($id)
     {
-        $this->repository->find($id)->delete();
+       return $this->service->destroy($id);
     }
 }

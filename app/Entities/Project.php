@@ -22,11 +22,17 @@ class Project extends Model
 
     public function client()
     {
-        return $this->belongsTo('CodeProject\Entities\Client');
+        return $this->belongsTo(Client::class);
     }
+
     public function user()
     {
-        return $this->belongsTo('CodeProject\Entities\User', 'owner_id');
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function note()
+    {
+        return $this->hasMany(ProjectNote::class);
     }
 
 }

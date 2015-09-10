@@ -9,8 +9,10 @@
 namespace CodeProject\Services;
 
 
+use CodeProject\Entities\Client;
 use CodeProject\Repositories\ClientRepository;
 use CodeProject\Validators\ClientValidator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Prettus\Validator\Exceptions\ValidatorException;
 
 class ClientService
@@ -44,20 +46,70 @@ class ClientService
         }
     }
 
-    public function update(array $data, $id)
+    public function getAll()
     {
-        try{
-            $this->validator->with($data)->passesOrFail();
-            return $this->repository->update($data, $id);
-        }
-        catch(ValidatorException $e)
+        return $this->repository->all();
+    }
+
+    public function show($id)
+    {
+        try
+        {
+            return $this->repository->find($id);
+        }catch (ModelNotFoundException $model)
         {
             return [
                 'error' => true,
-                'message' => $e->getMessageBag()
+                'message' => 'Nao foi possivel encontrar o usuario'
             ];
         }
-
     }
 
+    public function update(array $data, $id)
+    {
+        try {
+            if (Client::findOrFail($id)){
+                try {
+                    $this->validator->with($data)->passesOrFail();
+                    return $this->repository->update($data, $id);
+                } catch (ValidatorException $e) {
+                    return [
+                        'error' => true,
+                        'message' => $e->getMessageBag()
+                    ];
+                }
+            }
+        }catch (ModelNotFoundException $model)
+        {
+            return [
+                'error' => true,
+                'message' => 'Nao foi possivel atualizar o usuario'
+            ];
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            if (Client::findOrFail($id))
+            {
+                try {
+                    $this->repository->find($id)->projects()->delete();
+                    $this->repository->delete($id);
+
+                    return ['sucess' => true];
+                }catch (\Exception $e){
+                    return [
+                        'error' => true,
+                        'message' => 'Erro ao tentar deletar um usuario!'
+                    ];
+                }
+            }
+        } catch (ModelNotFoundException $e) {
+            return [
+                'error' => true,
+                'message'=> $e->getMessage()
+            ];
+        }
+    }
 }
