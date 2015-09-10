@@ -65,7 +65,7 @@ class ProjectService
         {
             return [
                 'error' => true,
-                'message' => $model->getMessage()
+                'message' => 'Nao foi possivel atualizar o projeto'
             ];
         }
     }
@@ -79,7 +79,7 @@ class ProjectService
         {
             return [
                 'error' => true,
-                'message' => $model->getMessage()
+                'message' => 'Nao foi possivel localizar o projeto'
             ];
         }
     }
@@ -94,7 +94,7 @@ class ProjectService
         } catch (ModelNotFoundException $e) {
             return [
                 'error' => true,
-                'message'=> $e->getMessage()
+                'message'=> 'Nao foi possivel excluir o projeto'
             ];
         }
     }
