@@ -10,13 +10,13 @@ namespace CodeProject\Services;
 
 
 use CodeProject\Entities\Project;
-use CodeProject\Repositories\ProjectMemberRepository;
-use CodeProject\Repositories\ProjectRepository;
-use CodeProject\Validators\ProjectValidator;
+use CodeProject\Entities\ProjectNote;
+use CodeProject\Repositories\ProjectNoteRepository;
+use CodeProject\Validators\ProjectNoteValidator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Prettus\Validator\Exceptions\ValidatorException;
 
-class ProjectService
+class ProjectNoteService
 {
     /**
      * @var ProjectValidator
@@ -26,16 +26,11 @@ class ProjectService
      * @var ProjectRepository
      */
     private $validator;
-    /**
-     * @var ProjectMemberRepository
-     */
-    private $repositoryMember;
 
-    public function __construct(ProjectRepository $repository, ProjectValidator $validator, ProjectMemberRepository $repositoryMember)
+    public function __construct(ProjectNoteRepository $repository, ProjectNoteValidator $validator)
     {
         $this->repository = $repository;
         $this->validator = $validator;
-        $this->repositoryMember = $repositoryMember;
     }
 
     public function create(array $data)
@@ -56,7 +51,7 @@ class ProjectService
     public function update(array $data, $id)
     {
         try {
-            if (Project::findOrFail($id)){
+            if (ProjectNote::findOrFail($id)){
                 try {
                     $this->validator->with($data)->passesOrFail();
                     return $this->repository->update($data, $id);
@@ -71,16 +66,16 @@ class ProjectService
         {
             return [
                 'error' => true,
-                'message' => 'Nao foi possivel atualizar o projeto'
+                'message' => 'Nao foi possivel atualizar a anotacao do projeto'
             ];
         }
     }
 
-    public function show($id)
+    public function show($id, $noteId)
     {
         try
         {
-            return $this->repository->with('client','user')->find($id);
+            return $this->repository->findWhere(['project_id' => $id, 'id' => $noteId]);
         }catch (ModelNotFoundException $model)
         {
             return [
@@ -93,7 +88,7 @@ class ProjectService
     public function destroy($id)
     {
         try {
-            if (Project::findOrFail($id))
+            if (ProjectNote::findOrFail($id))
             {
                 return ['success' => $this->repository->delete($id)];
             }
@@ -105,29 +100,8 @@ class ProjectService
         }
     }
 
-    public function getAll()
+    public function getAll($id)
     {
-        return $this->repository->with(['client','user'])->all();
-    }
-
-
-    public function addMember(array $data)
-    {
-        return $this->repositoryMember->create($data);
-    }
-
-    public function removeMember($project_id, $user_id)
-    {
-        return $this->repositoryMember->findWhere(['project_id'=> $project_id, 'user_id' => $user_id])->delete();
-    }
-
-    public function isMember($project_id, $user_id)
-    {
-        $result =  $this->repositoryMember->findWhere(['project_id' => $project_id, 'user_id' => $user_id]);
-
-        if (count($result) > 0)
-            return true;
-
-        return false;
+        return $this->repository->findWhere(['project_id' => $id]);
     }
 }
