@@ -15,6 +15,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+Route::post('oauth/access_token', function() {
+   return \Illuminate\Support\Facades\Response::json(\LucaDegasperi\OAuth2Server\Facades\Authorizer::issueAccessToken());
+});
+
 Route::get('client','ClientController@index');
 Route::post('client','ClientController@store');
 Route::get('client/{id}','ClientController@show');
@@ -34,6 +39,9 @@ Route::delete('project/{id}','ProjectController@destroy');
 Route::put('project/{id}','ProjectController@update');
 
 Route::get('project/{id}/members', 'ProjectMemberController@members');
+Route::get('project/{id}/member/{userId}', 'ProjectMemberController@isMember');
+Route::post('project/{id}/member/{userId}', 'ProjectMemberController@addMember');
+Route::delete('project/{id}/member/{userId}', 'ProjectMemberController@removeMember');
 
 Route::get('project/task', 'ProjectTaskController@index');
 Route::post('project/task', 'ProjectTaskController@store');

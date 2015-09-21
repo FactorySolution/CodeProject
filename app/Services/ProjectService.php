@@ -10,10 +10,13 @@ namespace CodeProject\Services;
 
 
 use CodeProject\Entities\Project;
+use CodeProject\Entities\ProjectMember;
+use CodeProject\Entities\User;
 use CodeProject\Repositories\ProjectMemberRepository;
 use CodeProject\Repositories\ProjectRepository;
 use CodeProject\Validators\ProjectValidator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
 use Prettus\Validator\Exceptions\ValidatorException;
 
 class ProjectService
@@ -111,23 +114,55 @@ class ProjectService
     }
 
 
-    public function addMember(array $data)
+    public function addMember($id, $memberId)
     {
-        return $this->repositoryMember->create($data);
+        try {
+            if (Project::findOrFail($id) && User::findOrFail($memberId)) {
+                if (DB::table('project_members')->where('project_id', $id)->where('user_id', $memberId)->count() > 0) {
+                    return response()->json([
+                        "error" => true,
+                        "message" => "The User {$memberId} is already member of the project {$id}."
+                    ]);
+                }
+                return ['sucess' => true];
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                "error" => true,
+                "message" => $e->getMessage()
+            ]);
+        }
     }
 
-    public function removeMember($project_id, $user_id)
+    public function removeMember($id, $memberId)
     {
-        return $this->repositoryMember->findWhere(['project_id'=> $project_id, 'user_id' => $user_id])->delete();
+        try {
+            if (ProjectMember::where("project_id", $id)->where("user_id", $memberId)->firstOrFail()) {
+                if (DB::table('project_members')->where('project_id', $id)->where('user_id', $memberId)->count() > 0) {
+                    return ['success' => true];
+                }
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                "error" => true,
+                "message" => $e->getMessage()
+            ], 404);
+        }
     }
 
-    public function isMember($project_id, $user_id)
+    public function isMember($id, $memberId)
     {
-        $result =  $this->repositoryMember->findWhere(['project_id' => $project_id, 'user_id' => $user_id]);
+        try {
 
-        if (count($result) > 0)
-            return true;
+            if (ProjectMember::where("project_id", $id)->where("user_id", $memberId)->firstOrFail()) {
+                return ['member' => true];
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                "error" => true,
+                "message" => $e->getMessage()
+            ]);
+        }
 
-        return false;
     }
 }

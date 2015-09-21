@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 use CodeProject\Http\Requests;
-use CodeProject\Http\Controllers\Controller;
+
 
 class ProjectTaskController extends Controller
 {
