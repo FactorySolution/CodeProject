@@ -2,6 +2,7 @@
 
 namespace CodeProject\Http\Controllers;
 
+use CodeProject\Repositories\ProjectMemberRepository;
 use CodeProject\Services\ProjectService;
 use CodeProject\Repositories\ProjectRepository;
 use Illuminate\Http\Request;
@@ -18,16 +19,21 @@ class ProjectController extends Controller
      * @var ProjectService
      */
     private $service;
+    /**
+     * @var ProjectMemberRepository
+     */
+    private $repositoryMember;
 
 
     /**
      * @param  ProjectRepository $repository
      * @param ClientService $service
      */
-    public function __construct(ProjectRepository $repository, ProjectService $service)
+    public function __construct(ProjectRepository $repository, ProjectService $service, ProjectMemberRepository $repositoryMember)
     {
         $this->repository = $repository;
         $this->service = $service;
+        $this->repositoryMember = $repositoryMember;
     }
 
     /**
@@ -84,5 +90,24 @@ class ProjectController extends Controller
     public function destroy($id)
     {
        return $this->service->destroy($id);
+    }
+
+    public function isMember($id, $userId){
+        return $this->service->isMember($id, $userId);
+    }
+
+    public function addMember($id, $memberId)
+    {
+        return $this->service->addMember($id, $memberId);
+    }
+
+    public function removeMember($id, $userId)
+    {
+        return $this->service->removeMember($id, $userId);
+    }
+
+    public function members($id)
+    {
+        return $this->repositoryMember->with(['user'])->findWhere(['project_id' => $id]);
     }
 }
