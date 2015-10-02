@@ -29,16 +29,11 @@ class ProjectService
      * @var ProjectRepository
      */
     private $validator;
-    /**
-     * @var ProjectMemberRepository
-     */
-    private $repositoryMember;
 
-    public function __construct(ProjectRepository $repository, ProjectValidator $validator, ProjectMemberRepository $repositoryMember)
-    {
+
+    public function __construct(ProjectRepository $repository, ProjectValidator $validator){
         $this->repository = $repository;
         $this->validator = $validator;
-        $this->repositoryMember = $repositoryMember;
     }
 
     public function create(array $data)
@@ -81,6 +76,7 @@ class ProjectService
 
     public function show($id)
     {
+
         try
         {
             return $this->repository->with('client','user')->find($id);
