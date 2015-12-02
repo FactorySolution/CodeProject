@@ -12,12 +12,16 @@ namespace CodeProject\Services;
 use CodeProject\Entities\Project;
 use CodeProject\Entities\ProjectMember;
 use CodeProject\Entities\User;
-use CodeProject\Repositories\ProjectMemberRepository;
 use CodeProject\Repositories\ProjectRepository;
+use CodeProject\Validators\ProjectFileValidator;
 use CodeProject\Validators\ProjectValidator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
+
 use Prettus\Validator\Exceptions\ValidatorException;
+
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Contracts\Filesystem\Factory as Storage;
 
 class ProjectService
 {
@@ -29,11 +33,31 @@ class ProjectService
      * @var ProjectRepository
      */
     private $validator;
+    /**
+     * @var Filesystem
+     */
+    private $filesystem;
+    /**
+     * @var Storage
+     */
+    private $storage;
+    /**
+     * @var ProjectFileValidator
+     */
+    private $projectFileValidator;
 
 
-    public function __construct(ProjectRepository $repository, ProjectValidator $validator){
+    public function __construct(ProjectRepository $repository,
+                                ProjectValidator $validator,
+                                Filesystem $filesystem,
+                                Storage $storage,
+                                 ProjectFileValidator $projectFileValidator
+    ){
         $this->repository = $repository;
         $this->validator = $validator;
+        $this->filesystem = $filesystem;
+        $this->storage = $storage;
+        $this->projectFileValidator = $projectFileValidator;
     }
 
     public function create(array $data)
@@ -110,55 +134,146 @@ class ProjectService
     }
 
 
-    public function addMember($id, $memberId)
+    public function addMember($id, $userId)
     {
-        try {
-            if (Project::findOrFail($id) && User::findOrFail($memberId)) {
-                if (DB::table('project_members')->where('project_id', $id)->where('user_id', $memberId)->count() > 0) {
-                    return response()->json([
-                        "error" => true,
-                        "message" => "The User {$memberId} is already member of the project {$id}."
-                    ]);
-                }
-                return ['sucess' => true];
-            }
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
+        try
+        {
+            $this->repository->find($id)->members()->attach($userId);
+            return ['success' => true];
+        }
+        catch (\Exception $e)
+        {
+            return [
                 "error" => true,
                 "message" => $e->getMessage()
-            ]);
+            ];
         }
     }
 
-    public function removeMember($id, $memberId)
+    public function removeMember($id, $userId)
     {
-        try {
-            if (ProjectMember::where("project_id", $id)->where("user_id", $memberId)->firstOrFail()) {
-                if (DB::table('project_members')->where('project_id', $id)->where('user_id', $memberId)->count() > 0) {
-                    return ['success' => true];
-                }
-            }
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
+        try
+        {
+            $this->repository->find($id)->members()->detach($userId);
+            return ['success' => true];
+        }
+        catch (\Exception $e)
+        {
+            return [
                 "error" => true,
                 "message" => $e->getMessage()
-            ], 404);
+            ];
         }
     }
 
-    public function isMember($id, $memberId)
+    public function isMember($id, $userId)
     {
-        try {
-
-            if (ProjectMember::where("project_id", $id)->where("user_id", $memberId)->firstOrFail()) {
-                return ['member' => true];
-            }
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                "error" => true,
-                "message" => $e->getMessage()
-            ]);
+        $check = ProjectMember::where("project_id", $id)->where("user_id", $userId)->count();
+        if($check < 1){
+            return ['success' => false];
         }
+        return ['success' => true];
 
     }
+
+    /**
+     * Verifica se o usuário logado é o dono do project
+         * @param  integer $projectId id do projeto
+         * @return boolean            se o usuário é ou não dono do projecto
+         */
+        public function checkProjectOwner($projectId)
+    {
+        $userId = \Authorizer::getResourceOwnerId();
+        return $this->repository->isOwner($projectId, $userId);
+    }
+        /**
+         * Verifica se o usuário logado é o membro do projecto
+         * @param  integer $projectId id do projeto
+         * @return boolean
+         */
+
+    /**
+     * Get all members of a project
+     * @param  integer $id projectId
+     * @return json
+     */
+    public function members($id)
+    {
+        try
+        {
+            $members = $this->repository->skipPresenter()->find($id)->members;
+            if(count($members))
+                return $members;
+            return [
+                'error' => false,
+                'message' => 'Não existem membros neste projeto'
+            ];
+        }
+        catch (\Exception $e)
+        {
+            return [
+                "error" => true,
+                "message" => $e->getMessage()
+            ];
+        }
+    }
+
+    public function checkProjectMember($projectId)
+    {
+
+        $userId = \Authorizer::getResourceOwnerId();
+        return $this->repository->hasMember($projectId, $userId);
+    }
+        /**
+         * Verifica se o usuário possui permissão de acesso a um projeto
+         * @param  integer $projectId id do projeto
+         * @return boolean
+         */
+    public function checkProjectPermissions($projectId)
+    {
+        if($this->checkProjectOwner($projectId) || $this->checkProjectMember($projectId))
+            return true;
+        return false;
+    }
+
+    /**
+     * Inserir arquivo a um projeto
+     * @param  array  $data dados enviados
+     * @return [type]       [description]
+     */
+    public function createFile(array $data)
+    {
+        try
+        {
+            $this->projectFileValidator->with($data)->passesOrFail();
+            $project = $this->repository->skipPresenter()->find($data['project_id']);
+            $projectFile = $project->files()->create($data);
+            $this->storage->put($projectFile->id.'.'.$data['extension'], $this->filesystem->get($data['file']));
+            return ['success' => true];
+        }
+        catch (\Exception $e)
+        {
+            return [
+                "error" => true,
+                "message" => $e->getMessage()
+            ];
+        }
+    }
+    public function deleteFile($projectId)
+    {
+        $files = $this->repository->skipPresenter()->find($projectId)->files;
+        $deletar = [];
+        foreach ($files as $file) {
+            $path = $file->id . '.' . $file->extension;
+            if($file->delete($file->id))
+                $deletar[] = $path;
+        }
+        $return = $this->storage->delete($deletar);
+        if($return)
+            return ['error' => false];
+        else
+            return ['error' => true];
+    }
+
+
 }

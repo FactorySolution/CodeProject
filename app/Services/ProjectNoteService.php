@@ -50,23 +50,16 @@ class ProjectNoteService
 
     public function update(array $data, $id)
     {
-        try {
-            if (ProjectNote::findOrFail($id)){
-                try {
-                    $this->validator->with($data)->passesOrFail();
-                    return $this->repository->update($data, $id);
-                } catch (ValidatorException $e) {
-                    return [
-                        'error' => true,
-                        'message' => $e->getMessageBag()
-                    ];
-                }
-            }
-        }catch (ModelNotFoundException $model)
+        try
+        {
+            $this->validator->with($data)->passesOrFail();
+            return $this->repository->update($data, $id);
+        }
+        catch(ValidatorException $e)
         {
             return [
-                'error' => true,
-                'message' => 'Nao foi possivel atualizar a anotacao do projeto'
+                'error'     => true,
+                'message'   => $e->getMessageBag()
             ];
         }
     }
@@ -87,21 +80,32 @@ class ProjectNoteService
 
     public function destroy($id)
     {
-        try {
-            if (ProjectNote::findOrFail($id))
-            {
-                return ['success' => $this->repository->delete($id)];
-            }
-        } catch (ModelNotFoundException $e) {
+        try
+        {
+            $this->repository->delete($id);
+            return ['success' => true];
+        }
+        catch (\Exception $e)
+        {
             return [
-                'error' => true,
-                'message'=> 'Nao foi possivel excluir o projeto'
+                "error" => true,
+                "message" => $e->getMessage()
             ];
         }
     }
 
-    public function getAll($id)
+    public function getAll($projectId)
     {
-        return $this->repository->findWhere(['project_id' => $id]);
+        try
+        {
+            return $this->repository->findWhere(['project_id' => $projectId]);
+        }
+        catch (\Exception $e)
+        {
+            return [
+                "error" => true,
+                "message" => $e->getMessage()
+            ];
+        }
     }
 }

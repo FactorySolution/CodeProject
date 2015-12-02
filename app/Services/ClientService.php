@@ -26,7 +26,8 @@ class ClientService
      */
     protected $validator;
 
-    public function __construct(ClientRepository $repository, ClientValidator $validator) {
+    public function __construct(ClientRepository $repository,
+                                ClientValidator $validator) {
         $this->repository = $repository;
         $this->validator = $validator;
     }
@@ -46,69 +47,66 @@ class ClientService
         }
     }
 
-    public function getAll()
-    {
-        return $this->repository->all();
-    }
-
-    public function show($id)
+    public function all()
     {
         try
         {
-            return $this->repository->find($id);
-        }catch (ModelNotFoundException $model)
+            return $this->repository->all();
+        }
+        catch (\Exception $e)
         {
             return [
-                'error' => true,
-                'message' => 'Nao foi possivel encontrar o usuario'
+                "error" => true,
+                "message" => $e->getMessage()
             ];
         }
     }
 
-    public function update(array $data, $id)
+    public function find($id)
     {
-        try {
-            if (Client::findOrFail($id)){
-                try {
-                    $this->validator->with($data)->passesOrFail();
-                    return $this->repository->update($data, $id);
-                } catch (ValidatorException $e) {
-                    return [
-                        'error' => true,
-                        'message' => $e->getMessageBag()
-                    ];
-                }
-            }
-        }catch (ModelNotFoundException $model)
+        try
+        {
+            return $this->repository->find($id);
+        }
+        catch (\Exception $e)
         {
             return [
-                'error' => true,
-                'message' => 'Nao foi possivel atualizar o usuario'
+                "error" => true,
+                "message" => $e->getMessage()
+            ];
+        }
+    }
+
+
+
+    public function update(array $data, $id)
+    {
+        try
+        {
+            $this->validator->with($data)->passesOrFail();
+            return $this->repository->update($data, $id);
+        }
+        catch(ValidatorException $e)
+        {
+            return [
+                'error'     => true,
+                'message'   => $e->getMessageBag()
             ];
         }
     }
 
     public function destroy($id)
     {
-        try {
-            if (Client::findOrFail($id))
-            {
-                try {
-                    $this->repository->find($id)->projects()->delete();
-                    $this->repository->delete($id);
-
-                    return ['sucess' => true];
-                }catch (\Exception $e){
-                    return [
-                        'error' => true,
-                        'message' => 'Erro ao tentar deletar um usuario!'
-                    ];
-                }
-            }
-        } catch (ModelNotFoundException $e) {
+        try
+        {
+            $this->repository->find($id)->projects()->delete();
+            $this->repository->delete($id);
+            return ['success' => true];
+        }
+        catch (\Exception $e) {
             return [
-                'error' => true,
-                'message'=> $e->getMessage()
+                "error" => true,
+                "message" => $e->getMessage()
             ];
         }
     }

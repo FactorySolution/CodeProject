@@ -41,7 +41,7 @@ class ClientController extends Controller
      */
     public function index()
     {
-        return $this->service->getAll();
+        return $this->repository->skipPresenter()->all();//service->getAll();
     }
 
 
@@ -64,7 +64,7 @@ class ClientController extends Controller
      */
     public function show($id)
     {
-       return $this->service->show($id);
+       return $this->repository->skipPresenter()->find($id);
     }
 
 

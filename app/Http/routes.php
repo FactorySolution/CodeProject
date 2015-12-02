@@ -29,6 +29,9 @@ Route::group(['middleware' => 'oauth'], function (){
     Route::group(['prefix' => 'project'], function(){
 
 
+        /**
+         * Project Notes
+         */
 
         Route::get('{id}/note','ProjectNoteController@index');
         Route::post('{id}/note','ProjectNoteController@store');
@@ -36,16 +39,31 @@ Route::group(['middleware' => 'oauth'], function (){
         Route::put('{id}/note/{noteId}','ProjectNoteController@update');
         Route::delete('{id}/note/{noteId}','ProjectNoteController@delete');
 
+        /**
+         * Project Task
+         */
+
         Route::get('task', 'ProjectTaskController@index');
         Route::post('task', 'ProjectTaskController@store');
         Route::get('task/{id}', 'ProjectTaskController@show');
         Route::put('task/{id}', 'ProjectTaskController@update');
         Route::delete('task/{id}', 'ProjectTaskController@destroy');
 
+        /**
+         * Project Member
+         */
+
         Route::get('{id}/members', 'ProjectController@members');
         Route::get('{id}/member/{userId}', 'ProjectController@isMember');
         Route::post('{id}/member/{userId}', 'ProjectController@addMember');
         Route::delete('{id}/member/{userId}', 'ProjectController@removeMember');
+
+        /**
+         * Project File
+         */
+
+        Route::post('{id}/file', 'ProjectFileController@store');
+        Route::post('{id}/file', 'ProjectFileController@destroy');
 
     });
 });
