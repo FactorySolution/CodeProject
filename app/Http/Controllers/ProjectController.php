@@ -42,7 +42,7 @@ class ProjectController extends Controller
 
 
         $ownerId = \Authorizer::getResourceOwnerId();
-
+//
         if($this->service->checkProjectPermissions($ownerId) == false){
             return ['error' => 'Access Forbidden'];
         }

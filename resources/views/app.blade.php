@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="app">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -37,7 +37,7 @@
 
 			<div class="collapse navbar-collapse" id="navbar">
 				<ul class="nav navbar-nav">
-					<li><a href="{{ url('/') }}">Welcome</a></li>
+					<li><a href="{{ url('/') }}">aa</a></li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right">
@@ -61,7 +61,7 @@
 		</div>
 	</nav>
 
-	@yield('content')
+	<div ng-view></div>
 
 	@if(Config::get('app.debug'))
 		<script resource="{{asset('build/js/vendor/jquery.min.js')}}"></script>
@@ -72,6 +72,10 @@
 		<script resource="{{asset('build/js/vendor/angular-messages.min.js')}}"></script>
 		<script resource="{{asset('build/js/vendor/ui.bootstrap.min.js')}}"></script>
 		<script resource="{{asset('build/js/vendor/navbar.min.js')}}"></script>
+
+		<script resource="{{asset('build/js/app.js')}}"></script>
+		<script resource="{{asset('build/js/controllers/login.js')}}"></script>
+		<script resource="{{asset('build/js/controllers/home.js')}}"></script>
 	@else
 		<script resource="{{elixir('js/all')}}"></script>
 	@endif
