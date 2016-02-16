@@ -37,7 +37,7 @@
 
 			<div class="collapse navbar-collapse" id="navbar">
 				<ul class="nav navbar-nav">
-					<li><a href="{{ url('/') }}">aa</a></li>
+					<li><a href="{{ url('/') }}">Teste</a></li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right">
@@ -64,20 +64,23 @@
 	<div ng-view></div>
 
 	@if(Config::get('app.debug'))
-		<script resource="{{asset('build/js/vendor/jquery.min.js')}}"></script>
-		<script resource="{{asset('build/js/vendor/angular.min.js')}}"></script>
-		<script resource="{{asset('build/js/vendor/angular-route.min.js')}}"></script>
-		<script resource="{{asset('build/js/vendor/angular-resource.min.js')}}"></script>
-		<script resource="{{asset('build/js/vendor/angular-animate.min.js')}}"></script>
-		<script resource="{{asset('build/js/vendor/angular-messages.min.js')}}"></script>
-		<script resource="{{asset('build/js/vendor/ui.bootstrap.min.js')}}"></script>
-		<script resource="{{asset('build/js/vendor/navbar.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/jquery.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/angular.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/angular-route.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/angular-resource.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/angular-animate.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/angular-messages.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/ui-bootstrap.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/navbar.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/angular-cookies.min.js')}}"></script>
+		<script src="{{asset('build/js/vendor/query-string.js')}}"></script>
+		<script src="{{asset('build/js/vendor/angular-oauth2.min.js')}}"></script>
 
-		<script resource="{{asset('build/js/app.js')}}"></script>
-		<script resource="{{asset('build/js/controllers/login.js')}}"></script>
-		<script resource="{{asset('build/js/controllers/home.js')}}"></script>
+		<script src="{{asset('build/js/app.js')}}"></script>
+		<script src="{{asset('build/js/controllers/login.js')}}"></script>
+		<script src="{{asset('build/js/controllers/home.js')}}"></script>
 	@else
-		<script resource="{{elixir('js/all')}}"></script>
+		<script src="{{elixir('js/all')}}"></script>
 	@endif
 </body>
 </html>
