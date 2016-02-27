@@ -6,8 +6,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Laravel</title>
 	@if(Config::get('app.debug'))
-		<link href="{{asset('build/css/vendor/bootstrap.min.css')}}" rel="stylesheet"/>
-		<link href="{{asset('build/css/vendor/bootstrap-theme.min.css')}}" rel="stylesheet"/>
+		<link href="{{asset('build/css/app.css')}}" rel="stylesheet"/>
+		<link href="{{asset('build/css/components.css')}}" rel="stylesheet"/>
+		<link href="{{asset('build/css/flaticon.css')}}" rel="stylesheet"/>
+		<link href="{{asset('build/css/font-awesome.css')}}" rel="stylesheet"/>
 	@else
 		<link href="{{elixir('css/all.css')}}" rel="stylesheet"/>
 	@endif
@@ -43,10 +45,10 @@
 				<ul class="nav navbar-nav navbar-right">
 					@if(auth()->guest())
 						@if(!Request::is('auth/login'))
-							<li><a href="{{ url('/auth/login') }}">Login</a></li>
+							<li><a href="{{ url('/#/login') }}">Login</a></li>
 						@endif
 						@if(!Request::is('auth/register'))
-							<li><a href="{{ url('/auth/register') }}">Register</a></li>
+							<li><a href="{{ url('#') }}">Register</a></li>
 						@endif
 					@else
 						<li class="dropdown">
@@ -77,8 +79,17 @@
 		<script src="{{asset('build/js/vendor/angular-oauth2.min.js')}}"></script>
 
 		<script src="{{asset('build/js/app.js')}}"></script>
+		<!-- Controllers -->
 		<script src="{{asset('build/js/controllers/login.js')}}"></script>
 		<script src="{{asset('build/js/controllers/home.js')}}"></script>
+		<script src="{{asset('build/js/controllers/client/clientList.js')}}"></script>
+		<script src="{{asset('build/js/controllers/client/clientNew.js')}}"></script>
+		<script src="{{asset('build/js/controllers/client/clientEdit.js')}}"></script>
+		<script src="{{asset('build/js/controllers/client/clientRemove.js')}}"></script>
+
+		<!-- Services -->
+		<script src="{{asset('build/js/services/client.js')}}"></script>
+
 	@else
 		<script src="{{elixir('js/all')}}"></script>
 	@endif
