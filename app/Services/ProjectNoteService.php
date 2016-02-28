@@ -27,6 +27,10 @@ class ProjectNoteService
      */
     private $validator;
 
+    /**
+     * @param ProjectNoteRepository $repository
+     * @param ProjectNoteValidator $validator
+     */
     public function __construct(ProjectNoteRepository $repository, ProjectNoteValidator $validator)
     {
         $this->repository = $repository;
@@ -35,12 +39,10 @@ class ProjectNoteService
 
     public function create(array $data)
     {
-        try{
+        try {
             $this->validator->with($data)->passesOrFail();
             return $this->repository->create($data);
-        }
-        catch(ValidatorException $e)
-        {
+        } catch (ValidatorException $e) {
             return [
                 'error' => true,
                 'message' => $e->getMessageBag()
@@ -50,27 +52,23 @@ class ProjectNoteService
 
     public function update(array $data, $id)
     {
-        try
-        {
+        try {
             $this->validator->with($data)->passesOrFail();
             return $this->repository->update($data, $id);
-        }
-        catch(ValidatorException $e)
-        {
+        } catch (ValidatorException $e) {
             return [
-                'error'     => true,
-                'message'   => $e->getMessageBag()
+                'error' => true,
+                'message' => $e->getMessageBag()
             ];
         }
     }
 
     public function show($id, $noteId)
     {
-        try
-        {
+        try {
             return $this->repository->findWhere(['project_id' => $id, 'id' => $noteId]);
-        }catch (ModelNotFoundException $model)
-        {
+
+        } catch (ModelNotFoundException $model) {
             return [
                 'error' => true,
                 'message' => 'Nao foi possivel localizar o projeto'
@@ -78,15 +76,16 @@ class ProjectNoteService
         }
     }
 
+    /**
+     * @param $id
+     * @return array
+     */
     public function destroy($id)
     {
-        try
-        {
+        try {
             $this->repository->delete($id);
             return ['success' => true];
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             return [
                 "error" => true,
                 "message" => $e->getMessage()
@@ -96,12 +95,9 @@ class ProjectNoteService
 
     public function getAll($projectId)
     {
-        try
-        {
+        try {
             return $this->repository->findWhere(['project_id' => $projectId]);
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             return [
                 "error" => true,
                 "message" => $e->getMessage()
