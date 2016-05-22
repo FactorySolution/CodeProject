@@ -1,6 +1,8 @@
-var app = angular.module('app', ['ngRoute', 'angular-oauth2', 'app.controllers', 'app.services']);
+var app = angular.module('app', ['ngRoute', 'angular-oauth2', 'app.controllers',
+    'app.services', 'app.filters', 'ui.bootstrap.typeahead', 'ui.bootstrap.tpls']);
 
 angular.module('app.controllers', ['ngMessages', 'angular-oauth2']);
+angular.module('app.filters', []);
 angular.module('app.services', ['ngResource']);
 
 app.provider('appConfig', ['$httpParamSerializerProvider',
@@ -8,6 +10,13 @@ app.provider('appConfig', ['$httpParamSerializerProvider',
         var config;
         config = {
             baseUrl: 'http://localhost:8000',
+            project: {
+                status: [
+                    {value: 1, label: 'Não Iniciado'},
+                    {value: 2, label: 'Iniciado'},
+                    {value: 3, label: 'Concluido'}
+                ]
+            },
 
             utils: {
                 transformRequest: function (data) {
@@ -25,11 +34,14 @@ app.provider('appConfig', ['$httpParamSerializerProvider',
                         var dataJson = JSON.parse(data);
 
                         // se tiver a propriedade 'data' e somente uma propriedade dentro do objeto
-                        if (dataJson.hasOwnProperty('data') || Object.keys(dataJson).length == 1) {
-                            dataJson = dataJson[0];
+                        if (dataJson.hasOwnProperty('data')) {
+                            dataJson = dataJson.data;
+
                         }
+                        //console.log(dataJson);
                         return dataJson;
                     }
+
                     return data;
                 }
             }
@@ -83,6 +95,23 @@ app.config([
             .when('/clients/:id/remove', {
                 templateUrl: 'build/views/client/remove.html',
                 controller: 'ClientRemoveController'
+            })
+            // project
+            .when('/projects', {
+                templateUrl: 'build/views/project/list.html',
+                controller: 'ProjectListController'
+            })
+            .when('/projects/new', {
+                templateUrl: 'build/views/project/new.html',
+                controller: 'ProjectNewController'
+            })
+            .when('/projects/:id/edit', {
+                templateUrl: 'build/views/project/edit.html',
+                controller: 'ProjectEditController'
+            })
+            .when('/projects/:id/remove', {
+                templateUrl: 'build/views/project/remove.html',
+                controller: 'ProjectRemoveController'
             })
             // Project notes
             .when('/project/:id/notes', {

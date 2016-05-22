@@ -14,8 +14,8 @@ use Prettus\Validator\LaravelValidator;
 class ProjectValidator extends LaravelValidator
 {
     protected $rules = [
-                'owner_id' => 'requided|max:100',
-                'client_id' => 'requided|max:100',
+                'owner_id' => 'required|max:100',
+                'client_id' => 'required|max:100',
                 'name' => 'required|max:100',
                 'description' => 'required|',
                 'progress' => 'required|',
