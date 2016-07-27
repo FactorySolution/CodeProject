@@ -1,80 +1,161 @@
 <?php
 
 namespace CodeProject\Http\Controllers;
-use CodeProject\Services\ProjectService;
-use CodeProject\Repositories\ProjectRepository;
-use Illuminate\Http\Request;
 
+use CodeProject\Entities\ProjectFile;
+use CodeProject\Repositories\ProjectFileRepository;
+use CodeProject\Services\ProjectFileService;
+use CodeProject\Http\Requests;
+use CodeProject\Repositories\ProjectRepository;
+use CodeProject\Services\ProjectService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use LucaDegasperi\OAuth2Server\Facades\Authorizer;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class ProjectFileController extends Controller
 {
     /**
-     * @var ProjectRepository
+     * @var ProjectFileRepository
      */
-
     private $repository;
+
     /**
-     * @var ProjectService
+     * @var ProjectFileService
      */
     private $service;
 
-
     /**
-     * @param  ProjectRepository $repository
-     * @param ProjectService $service
+     * @param ProjectFileRepository $repository
+     * @param ProjectFileService $service
      */
-    public function __construct(ProjectRepository $repository,
-                                ProjectService $service)
+    public function __construct(ProjectFileRepository $repository, ProjectFileService $service)
     {
         $this->repository = $repository;
         $this->service = $service;
+    }
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index($id)
+    {
+        return $this->repository->findWhere(['project_id' => $id]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request  $request
+     * @param  Request $request
      * @return Response
      */
     public function store(Request $request)
     {
-        if (!$request->has('file')){
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'file'=> 'required'
+            ]);
+
+            if($validator->fails()) {
+                return [
+                    'error' => true,
+                    'message' => 'Unselected file'
+                ];
+            }
+
+            $file = $request->file('file');
+            $extension = $file->getClientOriginalExtension();
+
+            $data['file'] = $file;
+            $data['extension'] = $extension;
+            $data['name'] = $request->name;
+            $data['project_id'] = $request->project_id;
+            $data['description'] = $request->description;
+
+            return $this->service->create($data);
+        } catch(ModelNotFoundException $ex) {
             return [
                 'error' => true,
-                'message' => 'Por favor, insira um arquivo'
+                'message' => 'Error store file'
             ];
         }
-
-
-        $file = $request->file('file');
-        $extension  = $file->getClientOriginalExtension();
-        $data = [
-            'file' => $file,
-            'extension' => $extension,
-            'name' => $request->name,
-            'description' => $request->description,
-            'project_id' => $request->project_id
-        ];
-
-
-        return $this->service->createFile($data);
     }
 
+    public function showFile($id)
+    {
+        if($this->service->checkProjectPermissions($id) == false){
+            return ['error' => 'Access Forbidden'];
+        }
+        $filePath = $this->service->getFilePath($id);
+        $fileContent = file_get_contents($filePath);
+        $file64 = base64_encode($fileContent);
+        return [
+            'file' => $file64,
+            'size' => filesize($filePath),
+            'name' => $this->service->getFileName($id)
+        ];
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int $id
+     * @return Response
+     */
+    public function show($id)
+    {
+        if($this->service->checkProjectPermissions($id) == false){
+            return ['error' => 'Access Forbidden'];
+        }
+        return $this->repository->find($id);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Request $request
+     * @param  int $id
+     * @return Response
+     */
+    public function update(Request $request, $id)
+    {
+        if($this->service->checkProjectPermissions($id) == false){
+            return ['error' => 'Access Forbidden'];
+        }
+        return $this->service->update($request->all(), $id);
+    }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int $id
+     * @param $filetId
      * @return Response
      */
     public function destroy($id)
     {
-        if(!$this->checkProjectOwner($id))
-            return ['error' => 'Access Forbidden'];
+        try{
+            if($this->service->checkProjectPermissions($id) == false){
+                return ['error' => 'Access Forbidden'];
+            }
 
+            $this->service->delete($id);
 
-        return $this->service->destroy($id);
+            return [
+                'error' => false,
+                'message' => 'Store file deleted'
+            ];
+        } catch(ModelNotFoundException $ex) {
+            return [
+                'error' => true,
+                'message' => 'Store file error'
+            ];
+        }
+
     }
-
-
 }

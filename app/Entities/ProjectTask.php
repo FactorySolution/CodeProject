@@ -11,18 +11,16 @@ class ProjectTask extends Model implements Transformable
     use TransformableTrait;
 
     protected $fillable = [
-        'project_id',
         'name',
+        'project_id',
         'start_date',
         'due_date',
-        'status',
+        'status'
     ];
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
+
 }

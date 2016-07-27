@@ -11,6 +11,8 @@ class ProjectTaskTableSeeder extends Seeder
      */
     public function run()
     {
-        factory(\CodeProject\Entities\ProjectTask::class, 50)->create();
+        DB::table('project_tasks')->truncate();
+        //\CodeProject\Entities\Project::truncate();
+        factory(\CodeProject\Entities\ProjectTask::class,10)->create();
     }
 }

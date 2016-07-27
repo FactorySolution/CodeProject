@@ -1,20 +1,36 @@
 <?php
 
 namespace CodeProject\Transformers;
-use League\Fractal\TransformerAbstract;
-use CodeProject\Entities\ProjectTask;
 
+use CodeProject\Entities\ProjectNote;
+use CodeProject\Entities\ProjectTask;
+use League\Fractal\TransformerAbstract;
+
+/**
+ * Class ProjectTransformer
+ * @package namespace CodeProject\Transformers;
+ */
 class ProjectTaskTransformer extends TransformerAbstract
 {
-    public function transform(ProjectTask $data)
+    /**
+     * Transform the \Project entity
+     * @param ProjectTask $projectTask
+     * @return array
+     * @internal param ProjectNote $projectNote
+     * @internal param ProjectNote $project
+     * @internal param \Project $model
+     */
+    public function transform(ProjectTask $projectTask)
     {
         return [
-            'id'         => $data->id,
-            'project_id' => $data->project_id,
-            'name'       => $data->name,
-            'start_date' => $data->start_date,
-            'due_date'   => $data->due_date,
-            'status'     => $data->status,
+            'id' => $projectTask->id,
+            'project_id' => $projectTask->project_id,
+            'start_date' => $projectTask->start_date,
+            'due_date' => $projectTask->due_date,
+            'status' => $projectTask->status,
+            'created_at' => date_format($projectTask->created_at, "Y-m-d h:m:s"),
+            'updated_at' => date_format($projectTask->created_at, "Y-m-d h:m:s"),
         ];
     }
+
 }

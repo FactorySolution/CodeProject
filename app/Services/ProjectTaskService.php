@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Andre
- * Date: 17/09/15
- * Time: 19:16
- */
 
 namespace CodeProject\Services;
 
@@ -15,35 +9,34 @@ use Prettus\Validator\Exceptions\ValidatorException;
 
 class ProjectTaskService
 {
+
     /**
-     * @var
+     * @var ProjectTaskRepository
      */
     private $repository;
     /**
-     * @var
+     * @var ProjectTaskValidator
      */
     private $validator;
 
-
     /**
-     * ProjectTaskService constructor.
+     * @param ProjectTaskRepository $repository
+     * @param ProjectTaskValidator $validator
      */
     public function __construct(ProjectTaskRepository $repository, ProjectTaskValidator $validator)
     {
+
         $this->repository = $repository;
         $this->validator = $validator;
     }
 
     public function create(array $data)
     {
-        try{
-
+        try {
             $this->validator->with($data)->passesOrFail();
             return $this->repository->create($data);
-
-        }catch (ValidatorException $e)
-        {
-            return[
+        } catch (ValidatorException $e) {
+            return [
                 'error' => true,
                 'message' => $e->getMessageBag()
             ];
@@ -52,15 +45,24 @@ class ProjectTaskService
 
     public function update(array $data, $id)
     {
-        try{
+        try {
             $this->validator->with($data)->passesOrFail();
             return $this->repository->update($data, $id);
-        }catch (ValidatorException $e)
-        {
-            return[
+        } catch (ValidatorException $e) {
+            return [
                 'error' => true,
                 'message' => $e->getMessageBag()
             ];
         }
+    }
+
+    public function all()
+    {
+        return $this->repository->with(['owner', 'client'])->all();
+    }
+
+    public function find($id)
+    {
+        return $this->repository->with(['owner', 'client'])->find($id);
     }
 }

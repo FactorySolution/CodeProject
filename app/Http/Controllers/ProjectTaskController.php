@@ -2,13 +2,11 @@
 
 namespace CodeProject\Http\Controllers;
 
+use CodeProject\Http\Requests;
 use CodeProject\Repositories\ProjectTaskRepository;
 use CodeProject\Services\ProjectTaskService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-
-use CodeProject\Http\Requests;
-
 
 class ProjectTaskController extends Controller
 {
@@ -16,57 +14,84 @@ class ProjectTaskController extends Controller
      * @var ProjectTaskRepository
      */
     private $repository;
+
     /**
      * @var ProjectTaskService
      */
     private $service;
 
     /**
-     * ProjectTaskController constructor.
+     * @param ProjectTaskRepository $repository
+     * @param ProjectTaskService $service
      */
     public function __construct(ProjectTaskRepository $repository, ProjectTaskService $service)
     {
         $this->repository = $repository;
         $this->service = $service;
     }
-
-    public function index()
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index($id)
     {
-        return $this->repository->all();
+        return $this->repository->findWhere(['project_id' => $id]);
     }
 
-    public function show($id)
-    {
-        try {
-            return $this->repository->find($id);
-        }catch (ModelNotFoundException $e)
-        {
-            return [
-                'error' => true,
-                'message' => 'Nao foi possivel encontrar o registro'
-            ];
-        }
-    }
-
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  Request $request
+     * @return Response
+     */
     public function store(Request $request)
     {
-        return $this->repository->create($request->all());
+        return $this->service->create($request->all());
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Display the specified resource.
+     *
+     * @param  int $id
+     * @return Response
+     */
+    public function show($id, $taskId)
     {
-        return $this->service->update($request->all(), $id);
+        try {
+            $project = $this->repository->findWhere(['project_id' => $id, 'id' => $taskId]);
+            return $project;
+        }catch (ModelNotFoundException $e) {
+            return [
+                'error' => true,
+                'message' => 'ProjectNote not found'
+            ];
+        }
+
     }
 
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Request $request
+     * @param  int $id
+     * @return Response
+     */
+    public function update(Request $request, $id, $taskId)
+    {
+        return $this->service->update($request->all(), $taskId);
+        //$this->repository->find($id)->update($request->all());
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int $id
+     * @return Response
+     */
     public function destroy($id)
     {
-        $result = $this->repository->find($id)->delete();
-
-        if ($result)
-            return ['error' => false];
-
-        return ['error' => true,
-        'message' => 'erro ao deletar uma task'];
+        $this->repository->find($id)->delete();
     }
-
 }

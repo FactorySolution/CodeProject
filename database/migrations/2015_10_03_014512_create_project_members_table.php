@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTableProjectMembers extends Migration
+class CreateProjectMembersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,13 +14,14 @@ class CreateTableProjectMembers extends Migration
     {
         Schema::create('project_members', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('project_id')->unsigned();
+            $table->integer('project_id', false, true);
             $table->foreign('project_id')->references('id')->on('projects');
-            $table->integer('user_id')->unsigned();
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->integer('member_id', false, true);
+            $table->foreign('member_id')->references('id')->on('users');
             $table->timestamps();
         });
     }
+
     /**
      * Reverse the migrations.
      *

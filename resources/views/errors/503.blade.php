@@ -40,7 +40,7 @@
     <body>
         <div class="container">
             <div class="content">
-                <div class="title">Be right back.</div>
+                <div class="title">Aplicação está agora em modo de manutenção.</div>
             </div>
         </div>
     </body>

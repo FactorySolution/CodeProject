@@ -1,13 +1,14 @@
 {
-  "name": "laravel-codeproject-frontend",
+  "name": "laravel-angular",
   "version": "0.0.0",
-  "homepage": "https://github.com/andresk8ter/CodeProject",
+  "homepage": "https://github.com/estevesklein/CodeProject-curso-laravel",
   "authors": [
-    "Andre <andresk82003@hotail.com>"
+    "Esteves Klein <esteves.klein@gmail.com>"
   ],
-  "description": "",
-  "main": "",
-  "moduleType": [],
+  "description": "Frontend de Gerenciador de Projetos",
+  "moduleType": [
+    "amd"
+  ],
   "license": "MIT",
   "ignore": [
     "**/.*",
@@ -18,14 +19,15 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "~1.5.0",
-    "angular-route": "^1.5.0",
-    "angular-resource": "^1.5.0",
-    "angular-animate": "^1.5.0",
-    "angular-messages": "^1.5.0",
-    "angular-bootstrap": "^1.1.2",
-    "angular-strap": "^2.3.7",
-    "bootstrap": "^3.3.6",
-    "angular-oauth2": "^4.0.0"
+    "angular": "1.4.1",
+    "angular-animate": "1.4.1",
+    "angular-bootstrap": "0.13.4",
+    "angular-messages": "1.4.1",
+    "angular-oauth2": "~3.0.1",
+    "angular-resource": "1.4.1",
+    "angular-route": "1.4.1",
+    "angular-strap": "2.2.4",
+    "bootstrap": "3.3.5",
+    "ng-file-upload": "7.0.17"
   }
 }

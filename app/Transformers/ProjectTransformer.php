@@ -1,35 +1,29 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Andre
- * Date: 01/10/15
- * Time: 20:09
- */
 
 namespace CodeProject\Transformers;
 
-
-use CodeProject\Entities\Project;
 use League\Fractal\TransformerAbstract;
+use CodeProject\Entities\Project;
 
+/**
+ * Class ProjectTransformer
+ * @package namespace CodeProject\Transformers;
+ */
 class ProjectTransformer extends TransformerAbstract
 {
-    // vai incluir os membros no final do resultado
     protected $defaultIncludes = ['members', 'client'];
 
     public function transform(Project $project)
     {
         return [
             'id' => $project->id,
-            'name' => $project->name,
             'client_id' => $project->client_id,
             'owner_id' => $project->owner_id,
-            //'members' => $project->members,
+            'name' => $project->name,
             'description' => $project->description,
             'progress' => (int) $project->progress,
             'status' => $project->status,
             'due_date' => $project->due_date,
-            'is_member' => $project->owner_id != \Authorizer::getResourceOwnerId(),
         ];
     }
 
@@ -40,7 +34,6 @@ class ProjectTransformer extends TransformerAbstract
 
     public function includeClient(Project $project)
     {
-        //dd($project->client);
         return $this->item($project->client, new ClientTransformer());
     }
 }

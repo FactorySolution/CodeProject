@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Andre
- * Date: 17/09/15
- * Time: 20:41
- */
 
 namespace CodeProject\OAuth;
-
 
 use Illuminate\Support\Facades\Auth;
 

@@ -2,118 +2,107 @@
 
 namespace CodeProject\Http\Controllers;
 
+use CodeProject\Http\Requests;
 use CodeProject\Repositories\ProjectNoteRepository;
 use CodeProject\Services\ProjectNoteService;
-use CodeProject\Services\ProjectService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-
 
 class ProjectNoteController extends Controller
 {
     /**
      * @var ProjectNoteRepository
      */
-
     private $repository;
+
     /**
      * @var ProjectNoteService
      */
     private $service;
-    /**
-     * @var ProjectService
-     */
-    private $projectService;
-
 
     /**
-     * @param  ProjectNoteRepository $repository
+     * @param ProjectNoteRepository $repository
      * @param ProjectNoteService $service
      */
-    public function __construct(ProjectNoteRepository $repository,
-                                ProjectNoteService $service,
-                                ProjectService $projectService)
+    public function __construct(ProjectNoteRepository $repository, ProjectNoteService $service)
     {
         $this->repository = $repository;
         $this->service = $service;
-        $this->projectService = $projectService;
     }
 
     /**
      * Display a listing of the resource.
      *
+     * @param $id
      * @return Response
      */
     public function index($id)
     {
-        if(!$this->checkProjectNotePermissions($id))
-            return ['error' => 'Access Forbidden'];
-
-        return $this->service->getAll($id);
+        return $this->repository->findWhere(['project_id' => $id]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request  $request
+     * @param  Request $request
      * @return Response
      */
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
-        $data = $request->all();
-        $data['project_id'] = $id;
-        return $this->service->create($data);
-        //return $this->service->create($request->all());
+        return $this->service->create($request->all());
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
+     * @param $idNote
      * @return Response
      */
-    public function show($id, $noteId)
+    public function show($id, $idNote)
     {
-        if(!$this->checkProjectNotePermissions($id))
-            return ['error' => 'Access Forbidden'];
+        try {
+            $result = $this->repository->findWhere(['project_id' => $id, 'id' => $idNote]);
+            if(isset($result['data']) && count($result['data']) == 1){
+                $result = [
+                    'data' => $result['data'][0]
+                ];
+            }
+            return $result;
+        }catch (ModelNotFoundException $e) {
+            return [
+                'error' => true,
+                'message' => 'ProjectNote not found'
+            ];
+        }
 
-        return $this->service->show($id, $noteId);
     }
 
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  Request  $request
-     * @param  int  $id
+     * @param  Request $request
+     * @param  int $id
+     * @param $idNote
      * @return Response
      */
-    public function update(Request $request, $id, $noteId)
+    public function update(Request $request, $id, $idNote)
     {
-        $projectNote = $this->repository->skipPresenter()->find($id);
-        $projectId = $projectNote->project_id;
-
-        if($this->checkProjectNotePermissions($projectId) == false){
-            return ['error' => 'Access Forbidden'];
-        }
-
-        return $this->service->update($request->all(), $noteId);
+        $data = $request->all();
+        $data['project_id'] = $id;
+        return $this->service->update($data, $idNote);
+        //$this->repository->find($id)->update($request->all());
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return Response
      */
     public function destroy($id, $noteId)
     {
-       return $this->service->destroy($noteId);
-    }
-
-    private function checkProjectNotePermissions($projectId){
-        if($this->projectService->checkProjectOwner($projectId) or $this->projectService->checkProjectMember($projectId)){
-            return true;
-        }
-        return false;
+        $this->repository->delete($noteId);
     }
 }

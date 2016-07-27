@@ -3,9 +3,10 @@
 namespace CodeProject\Entities;
 
 use Illuminate\Database\Eloquent\Model;
+use Prettus\Repository\Contracts\Transformable;
 use Prettus\Repository\Traits\TransformableTrait;
 
-class Project extends Model
+class Project extends Model implements Transformable
 {
     use TransformableTrait;
 
@@ -19,26 +20,30 @@ class Project extends Model
         'due_date'
     ];
 
+    public function owner()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function client()
     {
         return $this->belongsTo(Client::class);
     }
 
-    public function user()
+    public function members()
     {
-        return $this->belongsTo(User::class, 'owner_id');
+        return $this->belongsToMany(User::class, 'project_members', 'project_id', 'member_id');
     }
 
-    public function note()
+    public function notes()
     {
         return $this->hasMany(ProjectNote::class);
     }
 
-    public function members()
-     {
-         return $this->belongsToMany(User::class, 'project_members', 'project_id', 'user_id');
-     }
+    public function task()
+    {
+        return $this->hasMany(ProjectTask::class);
+    }
 
     public function files()
     {

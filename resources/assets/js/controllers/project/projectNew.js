@@ -1,41 +1,45 @@
 angular.module('app.controllers')
     .controller('ProjectNewController',
-    ['$scope', '$location', '$cookies', 'Project', 'Client', 'appConfig',
-        function ($scope, $location, $cookies, Project, Client, appConfig) {
+        ['$scope', '$location', '$cookies', 'Project', 'Client', 'appConfig',
+            function ($scope, $location, $cookies, Project, Client, appConfig) {
+                $scope.project = new Project();
+                $scope.status = appConfig.project.status;
 
-            $scope.project = new Project();
-            $scope.status = appConfig.project.status;
+                $scope.due_date = {
+                    status: {
+                        opened: false
+                    }
+                };
 
-            
-            $scope.save = function () {
+                $scope.open = function($event){
+                    $scope.due_date.status.opened = true;
+                };
 
-                if ($scope.form.$valid) {
-                    $scope.project.owner_id = $cookies.getObject('user').id;
-                    $scope.project.$save().then(function () {
-                        $location.path('/projects');
-                    });
-                }
-            };
+                $scope.save = function () {
+                    if ($scope.form.$valid) {
+                        $scope.project.owner_id = $cookies.getObject('user').id;
+                        $scope.project.$save().then(function () {
+                            $location.path('/projects');
+                        });
+                    }
+                };
 
-            $scope.formatName = function(model){
-                if(model){
-                    return model.name;
-                }
+                $scope.formatName = function (model) {
+                    if (model) {
+                        return model.name;
+                    }
+                    return '';
+                };
 
-                return '';
-            };
+                $scope.getClients = function (name) {
+                    return Client.query({
+                        search: name,
+                        searchFields: 'name:like'
+                    }).$promise;
+                };
 
-            $scope.getClients = function(name) {
-                return Client.query({
-                    search: name,
-                    searchFields: 'name:like'
-                }).$promise;
-            };
+                $scope.selectClient = function (item) {
+                    $scope.project.client_id = item.id;
+                };
 
-            $scope.selectClient = function(item){
-
-                $scope.project.client_id = item.id;
-            };
-
-
-        }]);
+            }]);

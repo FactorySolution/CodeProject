@@ -1,75 +1,63 @@
-var app = angular.module('app', ['ngRoute', 'angular-oauth2', 'app.controllers',
-    'app.services', 'app.filters', 'ui.bootstrap.typeahead', 'ui.bootstrap.tpls']);
+var app = angular.module('app', [
+    'ngRoute', 'angular-oauth2', 'app.controllers', 'app.services', 'app.filters', 'app.directives', 'ui.bootstrap.typeahead',
+    'ui.bootstrap.datepicker', 'ui.bootstrap.tpls','ngFileUpload'
+]);
 
 angular.module('app.controllers', ['ngMessages', 'angular-oauth2']);
 angular.module('app.filters', []);
+angular.module('app.directives', []);
 angular.module('app.services', ['ngResource']);
 
-app.provider('appConfig', ['$httpParamSerializerProvider',
-    function ($httpParamSerializerProvider) {
-        var config;
-        config = {
-            baseUrl: 'http://localhost:8000',
-            project: {
-                status: [
-                    {value: 1, label: 'Não Iniciado'},
-                    {value: 2, label: 'Iniciado'},
-                    {value: 3, label: 'Concluido'}
-                ]
-            },
-
-            utils: {
-                transformRequest: function (data) {
-                    if (angular.isObject(data)) {
-                        return $httpParamSerializerProvider.$get()(data);
-                    }
-                    return data;
-                },
-                transformResponse: function (data, headers) {
-                    var headersGetter = headers();
-
-                    if (headersGetter['content-type'] == 'application/json' ||
-                        headersGetter['content-type'] == 'text/json') {
-
-                        var dataJson = JSON.parse(data);
-
-                        // se tiver a propriedade 'data' e somente uma propriedade dentro do objeto
-                        if (dataJson.hasOwnProperty('data')) {
-                            dataJson = dataJson.data;
-
-                        }
-                        //console.log(dataJson);
-                        return dataJson;
-                    }
-
-                    return data;
+app.provider('appConfig', ['$httpParamSerializerProvider', function ($httpParamSerializerProvider) {
+    var config = {
+        baseUrl: 'http://localhost:8000',
+        project: {
+            status: [
+                {value: 1, label: 'Não Iniciado'},
+                {value: 2, label: 'Iniciado'},
+                {value: 3, label: 'Concluído'}
+            ]
+        },
+        urls: {
+            projectFile: '/project/{{id}}/file/{{idFile}}'
+        },
+        utils: {
+            transformRequest: function (data) {
+                if (angular.isObject(data)) {
+                    return $httpParamSerializerProvider.$get()(data);
                 }
-            }
-        };
-
-        return {
-            config: config,
-            $get: function () {
-                return config;
+                return data;
+            },
+            transformResponse: function (data, headers) {
+                var headersGetter = headers();
+                if (headersGetter['content-type'] == 'application/json' ||
+                    headersGetter['content-type'] == 'text/json') {
+                    var dataJson = JSON.parse(data);
+                    if (dataJson.hasOwnProperty('data')) {
+                        dataJson = dataJson.data;
+                    }
+                    return dataJson;
+                }
+                return data;
             }
         }
-    }]);
+    };
+
+    return {
+        config: config,
+        $get: function () {
+            return config;
+        }
+    }
+}]);
 
 app.config([
     '$routeProvider', '$httpProvider', 'OAuthProvider', 'OAuthTokenProvider', 'appConfigProvider',
     function ($routeProvider, $httpProvider, OAuthProvider, OAuthTokenProvider, appConfigProvider) {
-
         $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
         $httpProvider.defaults.headers.put['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
-
         $httpProvider.defaults.transformRequest = appConfigProvider.config.utils.transformRequest;
-
         $httpProvider.defaults.transformResponse = appConfigProvider.config.utils.transformResponse;
-
-        // 07.01.2016 - interceptor
-        //$httpProvider.interceptors.splice(0,1); // remover na posição 0, somente 1
-        //$httpProvider.interceptors.splice(0,1); // remover na posição 0, somente 1
-        //$httpProvider.interceptors.push('oauthFixInterceptor');
         $routeProvider
             .when('/login', {
                 templateUrl: 'build/views/login.html',
@@ -79,7 +67,6 @@ app.config([
                 templateUrl: 'build/views/home.html',
                 controller: 'HomeController'
             })
-            //Clients
             .when('/clients', {
                 templateUrl: 'build/views/client/list.html',
                 controller: 'ClientListController'
@@ -96,7 +83,6 @@ app.config([
                 templateUrl: 'build/views/client/remove.html',
                 controller: 'ClientRemoveController'
             })
-            // project
             .when('/projects', {
                 templateUrl: 'build/views/project/list.html',
                 controller: 'ProjectListController'
@@ -113,12 +99,11 @@ app.config([
                 templateUrl: 'build/views/project/remove.html',
                 controller: 'ProjectRemoveController'
             })
-            // Project notes
             .when('/project/:id/notes', {
                 templateUrl: 'build/views/project-note/list.html',
                 controller: 'ProjectNoteListController'
             })
-            .when('/project/:id/notes/:idNote/show', {
+            .when('/project/:id/notes/:nodeId/show', {
                 templateUrl: 'build/views/project-note/show.html',
                 controller: 'ProjectNoteShowController'
             })
@@ -133,15 +118,29 @@ app.config([
             .when('/project/:id/notes/:idNote/remove', {
                 templateUrl: 'build/views/project-note/remove.html',
                 controller: 'ProjectNoteRemoveController'
+            })
+            .when('/project/:id/files', {
+                templateUrl: 'build/views/project-file/list.html',
+                controller: 'ProjectFileListController'
+            })
+            .when('/project/:id/files/new', {
+                templateUrl: 'build/views/project-file/new.html',
+                controller: 'ProjectFileNewController'
+            })
+            .when('/project/:id/files/:idFile/edit', {
+                templateUrl: 'build/views/project-file/edit.html',
+                controller: 'ProjectFileEditController'
+            })
+            .when('/project/:id/files/:idFile/remove', {
+                templateUrl: 'build/views/project-file/remove.html',
+                controller: 'ProjectFileRemoveController'
             });
-
 
         OAuthProvider.configure({
             baseUrl: appConfigProvider.config.baseUrl,
             clientId: 'appid1',
             clientSecret: 'secret',
             grantPath: 'oauth/access_token'
-
         });
 
         OAuthTokenProvider.configure({
@@ -165,6 +164,6 @@ app.run(['$rootScope', '$window', 'OAuth', function ($rootScope, $window, OAuth)
         }
 
         // Redirect to `/login` with the `error_reason`.
-        return $window.location.href = '/login?error_reason=' + rejection.data.error;
+        return $window.location.href = '/#/login?error_reason=' + rejection.data.error;
     });
 }]);
